@@ -45,3 +45,19 @@ Glossary of new concepts learned while building this project.
 **`connection()` (from `next/server`)** — A Next.js function you `await` inside a Server Component to signal that the component needs runtime data (can't be fully static). Used inside a `<Suspense>` boundary so the rest of the page can still be prerendered.
 
 **`<Suspense>`** — A React component that shows a `fallback` UI while its children are loading (e.g., waiting for a DB query in a Server Component). In Next.js 16 with `cacheComponents`, this is the primary way to mark dynamic boundaries. _No direct Laravel equivalent — in Blade you'd just block the whole response._
+
+---
+
+## Step 3: Zod Validators + Types
+
+**`$inferSelect` / `$inferInsert`** — Drizzle utility types that extract TypeScript types directly from a table definition. `$inferSelect` gives you the shape of a row you'd get from a SELECT (all fields present). `$inferInsert` gives you the shape needed for INSERT (fields with defaults become optional). _Laravel equivalent: none — Eloquent models are dynamic, you don't get compile-time types._
+
+**Single source of truth pattern** — The idea that your DB schema is the ONLY place where the data shape is defined. Types and validators are derived from it, never duplicated manually. Flow: `schema.ts` (Drizzle) → `types/index.ts` (inferred TS types) → `validators.ts` (Zod runtime checks). _Laravel equivalent: migrations define the DB, but Models/FormRequests are written separately — no auto-inference._
+
+**Zod** — A TypeScript-first runtime validation library. You define a "schema" (like `z.string().min(1)`) and call `.parse(data)` or `.safeParse(data)` to validate at runtime. It throws/returns detailed errors if validation fails. _Laravel equivalent: Form Request rules like `'company' => 'required|string|max:255'` — same concept, different syntax._
+
+**`z.infer<typeof schema>`** — Extracts a TypeScript type from a Zod schema. So your validation rules AND your types come from the same schema — no duplication. _No Laravel equivalent — in Laravel the type system and validation are completely separate._
+
+**`.partial()`** — Zod method that makes all fields optional (like TypeScript's `Partial<T>`). We use it to create the update schema from the create schema: `updateApplicationSchema = createApplicationSchema.partial()`. _Laravel equivalent: using `'sometimes'` on all rules in an update request._
+
+**`z.coerce.number()`** — Zod 4 coercion: automatically converts string input to a number before validating. Useful for form data where everything arrives as a string. _Laravel equivalent: automatic type casting in Laravel's validation._

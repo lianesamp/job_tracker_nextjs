@@ -37,7 +37,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 3: Zod Validators + Types
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Create Zod schemas for validating application input
 - Infer TypeScript types from Drizzle schema
