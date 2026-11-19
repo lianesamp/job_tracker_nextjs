@@ -12,6 +12,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/**
+ * Root metadata — applies to all pages unless overridden.
+ *
+ * OPENGRAPH TAGS:
+ * These control what appears when someone shares a link on LinkedIn, Twitter,
+ * Slack, etc. The social platform reads the og:title, og:description, og:type
+ * from the HTML <meta> tags and uses them to render a preview card.
+ *
+ * The `title.template` also applies to OpenGraph titles, so child pages
+ * automatically get "Page Title | Job Tracker" in social previews too.
+ *
+ * Laravel equivalent: setting <meta property="og:..."> tags in your Blade
+ * layout's <head> section. Next.js generates these from the metadata object.
+ */
 export const metadata: Metadata = {
   title: {
     default: "Job Tracker",
@@ -19,6 +33,26 @@ export const metadata: Metadata = {
   },
   description:
     "Track your developer job applications in Spain. Kanban board, status history and stats.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Job Tracker",
+    title: {
+      default: "Job Tracker",
+      template: "%s | Job Tracker",
+    },
+    description:
+      "Track your developer job applications in Spain. Kanban board, status history and stats.",
+  },
+  twitter: {
+    card: "summary",
+    title: {
+      default: "Job Tracker",
+      template: "%s | Job Tracker",
+    },
+    description:
+      "Track your developer job applications in Spain. Kanban board, status history and stats.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

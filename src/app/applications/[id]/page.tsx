@@ -52,8 +52,16 @@ export async function generateMetadata({
     return { title: "Not Found" };
   }
 
+  const title = `${application.company} — ${application.role}`;
+  const description = `Job application for ${application.role} at ${application.company}${application.city ? ` in ${application.city}` : ""}.`;
+
   return {
-    title: `${application.company} — ${application.role}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    },
   };
 }
 

@@ -139,7 +139,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 10: SEO Metadata
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Add static `metadata` export in `layout.tsx` (title, description, OpenGraph)
 - Add `generateMetadata` in dynamic pages (`/applications/[id]`)

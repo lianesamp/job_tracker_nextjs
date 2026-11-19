@@ -181,3 +181,15 @@ Glossary of new concepts learned while building this project.
 **`"use cache"` directive** — The Next.js 16 replacement for `export const revalidate` when `cacheComponents: true` is enabled. Place it at the top of a file (or a function) to tell Next.js to cache that component/page output. Pair it with `cacheLife()` to control the TTL. Unlike `revalidate` (which only works at the route level), `"use cache"` can be applied to individual components — more flexible and composable. _Laravel equivalent: going from `Cache::remember()` on the whole response to caching individual Blade partials._
 
 **`cacheLife()`** — A function from `next/cache` used with `"use cache"` to set the cache duration. Built-in profiles include `"minutes"` (~60s revalidate, 1h expiry), `"hours"`, `"days"`, etc. You can also pass a custom object with `stale`, `revalidate`, and `expire` values. _Laravel equivalent: the TTL argument in `Cache::remember('key', 60, fn() => ...)`._
+
+---
+
+## Step 10: SEO Metadata
+
+**OpenGraph tags** — HTML `<meta>` tags (like `og:title`, `og:description`, `og:type`) that control how your page looks when shared on social platforms (LinkedIn, Twitter, Slack, etc.). The platform reads these tags and renders a preview card with the title, description, and optionally an image. In Next.js, you add them to the `metadata` object under the `openGraph` key — the framework generates the `<meta>` tags automatically. _Laravel equivalent: manually adding `<meta property="og:title" content="...">` in your Blade layout's `<head>` section._
+
+**Twitter card tags** — Similar to OpenGraph but specifically for Twitter/X. The `card` property controls the preview style: `"summary"` (small card), `"summary_large_image"` (wide card with big image). Next.js generates these from the `twitter` key in the metadata object.
+
+**Metadata inheritance** — In Next.js, child pages inherit metadata from parent layouts. The root layout sets default OpenGraph tags (site name, type, description), and child pages only need to override what's different (title, description). The `title.template` applies to both regular titles and OpenGraph titles. _Laravel equivalent: setting default meta tags in the layout and overriding them with `@section` in child views._
+
+**Dynamic OpenGraph in `generateMetadata`** — When a page uses `generateMetadata` (the async function), you can build OpenGraph tags from the data. For the detail page, we set `og:title` to "Company — Role" and `og:description` to include the city. This means sharing a link to `/applications/5` on LinkedIn shows the actual company and role in the preview card.
