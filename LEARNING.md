@@ -139,3 +139,19 @@ Glossary of new concepts learned while building this project.
 **Uncontrolled inputs (`defaultValue`)** — React inputs can be "controlled" (value + onChange, React tracks state) or "uncontrolled" (defaultValue, the DOM tracks state). We use `defaultValue` because Server Actions read from `FormData` (the DOM), so there's no need for React to track every keystroke. _Vue equivalent: `v-model` is always "controlled." In React, uncontrolled is simpler when you only need the final value on submit._
 
 **`desc()` (Drizzle)** — An ORDER BY helper from `drizzle-orm`. `desc(statusHistory.changedAt)` generates `ORDER BY changed_at DESC` so the most recent status change appears first. _Laravel equivalent: `->orderByDesc('changed_at')` in Eloquent._
+
+---
+
+## Step 8: Public /stats Page (ISR)
+
+**Incremental Static Regeneration (ISR)** — A rendering strategy where a page is pre-rendered at build time (like a static HTML file) but re-generated in the background after a set interval. The visitor always gets an instant response (cached HTML), but the data stays reasonably fresh. You enable it by exporting `revalidate = 60` from a page (re-generate every 60 seconds). _Laravel equivalent: `Cache::remember('stats', 60, fn() => ...)` — same idea of caching computed data for a period. The difference is Next.js does it at the entire page level, including the HTML._
+
+**Stale-while-revalidate** — The caching strategy behind ISR. After the `revalidate` period expires, the next visitor still gets the stale (cached) page instantly, but Next.js triggers a background re-render. Once done, all subsequent visitors get the fresh page. This is the same strategy used by CDN cache headers. _No direct Laravel equivalent — you'd need to implement this manually with queue jobs or cache warming._
+
+**When to use ISR vs Dynamic vs Full Static** — Full static: data never changes (marketing pages, docs). ISR: data changes occasionally, stale-for-a-minute is OK (stats, dashboards, blog posts). Dynamic: data must be real-time or user-specific (forms, boards, authenticated pages). _Laravel equivalent: static = pre-built HTML files; ISR ≈ cached Blade views with TTL; dynamic = no caching._
+
+**`sql<number>\`...\`` (Drizzle)** — A tagged template literal for writing raw SQL within Drizzle queries while keeping type safety. The `<number>` generic tells TypeScript what type the result will be. We use `sql<number>\`cast(count(*) as int)\`` because PostgreSQL's `count()` returns `bigint` (which Drizzle maps to a string in JS) — casting to `int` gives us an actual number. _Laravel equivalent: `DB::raw('count(*)')` — same concept of embedding raw SQL in a query builder call._
+
+**`.groupBy()` (Drizzle)** — Groups rows by a column for aggregate queries. `db.select(...).from(applications).groupBy(applications.status)` generates `SELECT ... GROUP BY status`. _Laravel equivalent: `->groupBy('status')` in Eloquent/Query Builder._
+
+**`export const revalidate`** — A Next.js route segment config that sets the ISR interval in seconds. `export const revalidate = 60` means "cache this page for 60 seconds, then re-generate on the next request." Set to `0` for always-dynamic, `false` for never-revalidate (full static). _No Laravel equivalent — this is a Next.js-specific page-level caching directive._

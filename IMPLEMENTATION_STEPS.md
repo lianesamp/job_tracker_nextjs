@@ -111,7 +111,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 8: Public /stats Page (ISR)
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Build `/stats` as a statically generated page with revalidation
 - Show: totals per status, response rate, most requested technologies
