@@ -170,7 +170,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 12: README + LEARNING.md (Final Docs)
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Write the full README in English: description, screenshot, deploy link, stack, how to run, tests, "What I learned"
 - Review and finalize LEARNING.md glossary
