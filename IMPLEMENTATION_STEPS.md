@@ -81,7 +81,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 6: Kanban Board
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Build the `/board` page as a Server Component (fetches data on the server)
 - Create Client Component columns with drag-and-drop

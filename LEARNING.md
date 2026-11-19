@@ -99,3 +99,27 @@ Glossary of new concepts learned while building this project.
 **`redirect()` in Server Actions** — Next.js's `redirect()` (from `next/navigation`) works inside Server Actions to navigate after a mutation. It throws internally (a Next.js convention) to interrupt execution, so it must be called OUTSIDE any try/catch. _Laravel equivalent: `return redirect('/board')` in a controller method._
 
 **Progressive enhancement** — When you use `<form action={formAction}>` instead of `onSubmit`, the form works even if JavaScript fails to load. The browser submits the form as a regular POST request, and the Server Action still runs. This is a web platform feature that Next.js preserves. _Laravel equivalent: standard `<form method="POST">` — it always works without JS. This is the same idea._
+
+---
+
+## Step 6: Kanban Board
+
+**`@dnd-kit/core`** — A modular drag-and-drop library for React. Unlike the older `react-beautiful-dnd` (now unmaintained), dnd-kit is actively maintained, accessible (keyboard + screen reader support built in), and works with React 19. It gives you primitives (`DndContext`, `useDraggable`, `useDroppable`) that you compose into your own UI. _Vue equivalent: `vuedraggable` (wraps SortableJS). The concept is the same — make elements draggable and define drop zones._
+
+**`DndContext`** — The root wrapper from dnd-kit. It tracks all draggables and droppables inside it and fires events (`onDragStart`, `onDragEnd`) when things are moved. Every draggable/droppable must be a descendant of a `DndContext`. _Think of it like Vue's `<draggable>` wrapper, but as a React context provider._
+
+**`useDraggable`** — A hook that makes an element draggable. Returns `setNodeRef` (attach to the DOM element), `attributes` (ARIA for a11y), `listeners` (pointer/keyboard handlers that start the drag), `transform` (x/y offset while dragging), and `isDragging` (boolean). You can attach custom `data` that's available in the `onDragEnd` handler.
+
+**`useDroppable`** — A hook that makes an element a drop target. Returns `setNodeRef` (attach to the DOM element) and `isOver` (true when a draggable hovers over it). We use `isOver` to highlight the column in blue when a card is dragged over it.
+
+**`DragOverlay`** — A component that renders a floating copy of the dragged item above everything. Without it, the original element moves with the cursor, which can cause layout shifts. With it, the original stays in place (semi-transparent) and a clean copy follows the cursor. _Vue equivalent: vuedraggable's ghost/clone element._
+
+**Sensors (PointerSensor, KeyboardSensor)** — Sensors detect HOW a drag starts. `PointerSensor` handles mouse/touch, `KeyboardSensor` handles arrow keys for accessibility. The `activationConstraint: { distance: 5 }` setting means you must move 5 pixels before a drag starts, preventing accidental drags on click.
+
+**Optimistic UI** — Updating the UI immediately before the server confirms the change. When you drop a card on a new column, we move it in local state right away (feels instant), then call the Server Action in the background. If the action fails, we revert to the previous state. _Laravel equivalent: in Livewire you'd use `wire:model.live` for instant updates. In Vue SPAs, you'd update Pinia state immediately and sync with the API._
+
+**`useTransition`** — A React 19 hook that marks a state update as non-urgent. We wrap the Server Action call in `startTransition()` so it doesn't block the UI while the server responds. The optimistic card move happens instantly; the server sync runs in the background. _No Laravel equivalent — this is a React-specific concurrency feature._
+
+**`<Link>` (from `next/link`)** — Next.js's replacement for `<a>` tags. It does client-side navigation (SPA-style) without a full page reload and prefetches the linked page when it appears in the viewport. _Vue equivalent: `<router-link>` from Vue Router. Laravel equivalent: regular `<a>` tags (Laravel doesn't do client-side navigation unless you add Inertia/Livewire)._
+
+**Server/Client Component split pattern** — The page (Server Component) fetches data from the DB and passes it as props to the interactive board (Client Component). This keeps the data-fetching on the server (no API endpoint needed, no loading spinner for initial data) while keeping interactivity on the client. _Laravel equivalent: a controller fetches data and passes it to an Inertia/Vue component via props._
