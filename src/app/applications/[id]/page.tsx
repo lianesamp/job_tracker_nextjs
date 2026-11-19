@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { eq } from "drizzle-orm";
@@ -60,13 +59,22 @@ export async function generateMetadata({
 
 // ─── Page content (async Server Component) ───────────────
 
-async function ApplicationDetail({ id }: { id: number }) {
-  await connection();
+async function ApplicationDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const numericId = Number(id);
+
+  if (isNaN(numericId) || numericId <= 0) {
+    notFound();
+  }
 
   const [application] = await db
     .select()
     .from(applications)
-    .where(eq(applications.id, id));
+    .where(eq(applications.id, numericId));
 
   if (!application) {
     notFound();
@@ -75,7 +83,7 @@ async function ApplicationDetail({ id }: { id: number }) {
   const history = await db
     .select()
     .from(statusHistory)
-    .where(eq(statusHistory.applicationId, id))
+    .where(eq(statusHistory.applicationId, numericId))
     .orderBy(desc(statusHistory.changedAt));
 
   return (
@@ -96,14 +104,7 @@ async function ApplicationDetail({ id }: { id: number }) {
 
 // ─── Page component ──────────────────────────────────────
 
-export default async function ApplicationDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const numericId = Number(id);
-
-  if (isNaN(numericId) || numericId <= 0) {
-    notFound();
-  }
-
+export default function ApplicationDetailPage({ params }: PageProps) {
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6">
@@ -125,7 +126,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
           </div>
         }
       >
-        <ApplicationDetail id={numericId} />
+        <ApplicationDetail params={params} />
       </Suspense>
     </main>
   );

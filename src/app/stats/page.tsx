@@ -1,40 +1,40 @@
+"use cache";
+
 import type { Metadata } from "next";
-import { count, sql } from "drizzle-orm";
+import { cacheLife } from "next/cache";
+import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, APPLICATION_STATUSES } from "@/db/schema";
 import type { ApplicationStatus } from "@/db/schema";
 
 /**
- * /stats — A statically generated page with Incremental Static Regeneration (ISR).
+ * /stats — A cached page that revalidates every 60 seconds.
  *
- * WHAT IS ISR?
- * ISR lets you create pages that are:
- *   1. Pre-rendered at build time (fast, cacheable, like a static HTML file)
- *   2. Re-generated in the background after a set interval (fresh data)
+ * WHAT IS "use cache"?
+ * In Next.js 16 with `cacheComponents: true`, the old `export const revalidate`
+ * approach is replaced by the `"use cache"` directive. Placing it at the top of
+ * a file tells Next.js to cache the entire page (or component) output.
  *
- * When a user visits /stats:
- *   - First visit: Next.js renders the page, caches it, and serves it.
- *   - Subsequent visits (within `revalidate` seconds): serves the cached version.
- *   - After `revalidate` seconds: the NEXT visitor triggers a background re-render.
- *     They still get the stale page instantly, but the cache is updated for everyone after.
+ * You pair it with `cacheLife()` to control how long the cache lasts.
+ * `cacheLife("minutes")` is a built-in profile that caches for ~60 seconds
+ * with a stale-while-revalidate window.
  *
- * This is called "stale-while-revalidate" — the same strategy used by CDNs and
- * HTTP caching headers.
+ * The behavior is the same ISR concept:
+ *   1. First visit: renders the page, caches the output.
+ *   2. Within the cache window: serves the cached HTML instantly.
+ *   3. After expiry: next visitor triggers a background re-render.
  *
- * Laravel equivalent: `Cache::remember('stats', 60, fn() => ...)` — same idea
- * of caching computed data for a period. The difference is Next.js does it at
- * the page level automatically, including the HTML output.
+ * Laravel equivalent: same as `Cache::remember('stats', 60, fn() => ...)`.
  *
- * WHEN TO USE ISR vs DYNAMIC vs FULL STATIC:
- * - Full static: data never changes (marketing pages, docs)
- * - ISR: data changes occasionally, stale-for-a-minute is OK (stats, dashboards)
- * - Dynamic (what /board uses): data must be real-time (forms, user-specific data)
+ * WHY THE CHANGE?
+ * `cacheComponents` unifies caching at the component level (not just routes).
+ * You can cache individual components, not just whole pages. The `"use cache"`
+ * directive is more flexible and composable than route-level config exports.
+ *
+ * WHEN TO USE "use cache" vs DYNAMIC:
+ * - "use cache": data changes occasionally, stale-for-a-minute is OK (stats)
+ * - No directive: data must be real-time (forms, user-specific data)
  */
-
-// ─── ISR configuration ──────────────────────────────────
-// Revalidate every 60 seconds. After 60s, the next request triggers a
-// background re-render. The visitor gets the cached page instantly.
-export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Stats",
@@ -70,8 +70,9 @@ const WORK_MODE_LABELS: Record<string, string> = {
 // ─── Page component ──────────────────────────────────────
 
 export default async function StatsPage() {
-  // These queries run on the server at build time (and every 60s after).
-  // No loading spinner needed — the HTML is pre-rendered.
+  // Cache this page for ~60 seconds (the "minutes" profile).
+  // After expiry, the next request triggers a background re-render.
+  cacheLife("minutes");
 
   // 1. Count per status
   //    sql<number>`...` is a Drizzle template literal for raw SQL with type safety.
@@ -120,7 +121,7 @@ export default async function StatsPage() {
     <main className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-2 text-2xl font-bold">Application Stats</h1>
       <p className="mb-8 text-sm text-gray-500">
-        Updated every 60 seconds via ISR.
+        Cached and refreshed every 60 seconds.
       </p>
 
       {total === 0 ? (

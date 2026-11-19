@@ -171,3 +171,13 @@ Glossary of new concepts learned while building this project.
 **`not-found.tsx`** — A special file rendered when a route doesn't exist or when `notFound()` is called in a Server Component. The app-level `not-found.tsx` handles all 404s globally. You can also create route-specific ones in nested folders. _Laravel equivalent: `resources/views/errors/404.blade.php`._
 
 **Next.js special files hierarchy** — The convention-based files in each route folder and how they nest: `layout.tsx` wraps `loading.tsx` wraps `error.tsx` wraps `page.tsx`. This means the layout stays visible while loading/error states are shown — the user never loses the navigation header.
+
+---
+
+## Build Fix: Partial Prerendering + `"use cache"`
+
+**Partial Prerendering (PPR)** — A Next.js 16 feature (enabled with `partialPrefetching: true` in config) that splits a page into a static shell (prerendered at build) and dynamic holes (streamed at request time). The key rule: **all dynamic data access (`params`, `cookies`, `fetch`, DB calls) must happen inside a `<Suspense>` boundary**, so the outer shell can be sent instantly. If you `await params` in the page component itself (outside Suspense), Next.js can't prerender any of it. _Laravel equivalent: imagine Blade could send the layout HTML immediately while the `@yield('content')` section loads in the background — that's PPR._
+
+**`"use cache"` directive** — The Next.js 16 replacement for `export const revalidate` when `cacheComponents: true` is enabled. Place it at the top of a file (or a function) to tell Next.js to cache that component/page output. Pair it with `cacheLife()` to control the TTL. Unlike `revalidate` (which only works at the route level), `"use cache"` can be applied to individual components — more flexible and composable. _Laravel equivalent: going from `Cache::remember()` on the whole response to caching individual Blade partials._
+
+**`cacheLife()`** — A function from `next/cache` used with `"use cache"` to set the cache duration. Built-in profiles include `"minutes"` (~60s revalidate, 1h expiry), `"hours"`, `"days"`, etc. You can also pass a custom object with `stale`, `revalidate`, and `expire` values. _Laravel equivalent: the TTL argument in `Cache::remember('key', 60, fn() => ...)`._
