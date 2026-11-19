@@ -125,7 +125,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 9: Loading & Error States
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Add `loading.tsx` to `/board`, `/applications/[id]`, and root
 - Add `error.tsx` to the same routes

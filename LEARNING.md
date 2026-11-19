@@ -155,3 +155,19 @@ Glossary of new concepts learned while building this project.
 **`.groupBy()` (Drizzle)** — Groups rows by a column for aggregate queries. `db.select(...).from(applications).groupBy(applications.status)` generates `SELECT ... GROUP BY status`. _Laravel equivalent: `->groupBy('status')` in Eloquent/Query Builder._
 
 **`export const revalidate`** — A Next.js route segment config that sets the ISR interval in seconds. `export const revalidate = 60` means "cache this page for 60 seconds, then re-generate on the next request." Set to `0` for always-dynamic, `false` for never-revalidate (full static). _No Laravel equivalent — this is a Next.js-specific page-level caching directive._
+
+---
+
+## Step 9: Loading & Error States
+
+**`loading.tsx`** — A special Next.js file that automatically becomes the `<Suspense>` fallback for its route segment. When the page's async Server Component is fetching data, the loading UI (typically a skeleton) is shown. Once data arrives, Next.js streams in the real content. You don't need to write `<Suspense>` yourself — the file IS the Suspense boundary. _Laravel equivalent: none built-in. You'd add loading spinners with JavaScript manually._
+
+**Skeleton UI** — A loading pattern that shows the page layout with gray placeholder shapes (instead of a spinner). This is better UX because: (1) users see the page structure immediately, (2) it reduces perceived loading time, (3) there's no layout shift when real content arrives. The `animate-pulse` Tailwind class adds a subtle breathing animation to the placeholders.
+
+**`error.tsx`** — A special Next.js file that wraps the route in a React Error Boundary. If the page throws an error (e.g., DB connection fails), this UI is shown instead of a crash. It receives `error` (the Error object) and `reset` (a function to retry rendering). **Must be a Client Component** (`"use client"`) because React Error Boundaries only work on the client. _Laravel equivalent: `resources/views/errors/500.blade.php`, but Next.js error boundaries are per-route — each page can have its own error UI._
+
+**React Error Boundary** — A React pattern that catches JavaScript errors in a component tree and displays a fallback UI instead of crashing the whole app. In class components, you'd implement `componentDidCatch()`. In Next.js, `error.tsx` does this automatically. The `reset()` function re-renders the segment, which re-runs the Server Component and its data fetch.
+
+**`not-found.tsx`** — A special file rendered when a route doesn't exist or when `notFound()` is called in a Server Component. The app-level `not-found.tsx` handles all 404s globally. You can also create route-specific ones in nested folders. _Laravel equivalent: `resources/views/errors/404.blade.php`._
+
+**Next.js special files hierarchy** — The convention-based files in each route folder and how they nest: `layout.tsx` wraps `loading.tsx` wraps `error.tsx` wraps `page.tsx`. This means the layout stays visible while loading/error states are shown — the user never loses the navigation header.
