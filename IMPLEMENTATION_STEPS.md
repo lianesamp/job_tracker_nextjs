@@ -66,7 +66,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 5: "Add Application" Form
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Build the `/applications/new` page
 - Create a Client Component form with controlled inputs

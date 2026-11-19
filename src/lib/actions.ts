@@ -23,6 +23,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, statusHistory } from "@/db/schema";
@@ -38,9 +39,13 @@ import type { Application } from "@/types";
 // `fieldErrors` maps field names to arrays of error messages (for form validation).
 // `formError` is a single top-level error (e.g. "Application not found").
 
-type ActionResult<T = undefined> =
+export type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; fieldErrors?: Record<string, string[]>; formError?: string };
+
+// The state shape used by useActionState for the create form.
+// `null` = initial state (form hasn't been submitted yet).
+export type FormState = ActionResult<Application> | null;
 
 // ─── createApplication ──────────────────────────────────
 
@@ -91,6 +96,37 @@ export async function createApplication(
     console.error("createApplication failed:", error);
     return { success: false, formError: "Failed to create application. Please try again." };
   }
+}
+
+// ─── createApplicationAction (for useActionState) ───────
+// useActionState requires the signature: (prevState, formData) => newState.
+// This wrapper converts FormData to a plain object and calls createApplication.
+//
+// WHY a separate wrapper?
+// createApplication takes `unknown` so it can also be called programmatically
+// (e.g. from tests or other server code). This wrapper is the FormData adapter.
+//
+// Laravel equivalent: in Laravel, the controller receives the Request object
+// and you'd call $request->validated(). Here FormData is the "Request" and
+// Zod validation happens inside createApplication.
+
+export async function createApplicationAction(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  // Object.fromEntries(formData) converts FormData → { key: value } object.
+  // This works because all our form fields are simple strings.
+  const raw = Object.fromEntries(formData);
+  const result = await createApplication(raw);
+
+  // On success, redirect to the board.
+  // redirect() throws internally (a Next.js convention), so it must be
+  // called OUTSIDE the try/catch in createApplication.
+  if (result.success) {
+    redirect("/board");
+  }
+
+  return result;
 }
 
 // ─── updateApplication ──────────────────────────────────

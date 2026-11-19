@@ -81,3 +81,21 @@ Glossary of new concepts learned while building this project.
 **`.safeParse()` vs `.parse()` (Zod)** — `.parse()` throws a `ZodError` on invalid input. `.safeParse()` returns `{ success: true, data }` or `{ success: false, error }` — no try/catch needed. We use `.safeParse()` in Server Actions so we can return structured errors to the form. _Laravel equivalent: using `Validator::make()` with `->fails()` instead of relying on automatic exception throwing._
 
 **`ActionResult<T>` pattern** — A discriminated union type: `{ success: true, data: T } | { success: false, fieldErrors?, formError? }`. Every Server Action returns this shape so the UI can handle success/failure uniformly. `fieldErrors` maps field names to error messages (for per-field form validation), while `formError` is a single top-level error. _No direct Laravel equivalent — in Laravel, validation errors are flashed to the session automatically._
+
+---
+
+## Step 5: "Add Application" Form
+
+**Client Component (`"use client"`)** — A React component that runs in the browser. You add the `"use client"` directive at the top of the file when you need interactivity: hooks (`useState`, `useActionState`), event handlers (`onClick`, `onSubmit`), or browser APIs. In Next.js, components are Server Components by default — you opt into client-side only when needed. _Vue equivalent: every Vue SFC with `<script setup>` runs in the browser by default. In React, you have to explicitly request it._
+
+**Server Components vs Client Components** — Server Components render on the server, have zero JS bundle cost, and can directly access the DB. Client Components render in the browser (after initial SSR) and can use hooks/interactivity. The rule of thumb: keep everything as a Server Component unless it needs interactivity, then push the `"use client"` boundary as low as possible. _Laravel equivalent: Blade views are all "server components." If you need interactivity, you'd add a Vue/Alpine component — same idea of keeping client code minimal._
+
+**`useActionState` (React 19)** — A hook that connects a form to a Server Action. Signature: `useActionState(action, initialState)` → `[state, formAction, isPending]`. The `formAction` goes into `<form action={formAction}>`, and React handles calling the Server Action, tracking the pending state, and updating `state` with the result. _No Vue/Laravel equivalent — in Laravel you'd submit the form, get redirected back with `$errors`, and use `@error('field')` in Blade. Here React keeps everything in component state without a page reload._
+
+**`isPending`** — The third value from `useActionState`. It's `true` while the Server Action is running on the server, `false` otherwise. Use it to disable the submit button and show "Saving..." text so users know something is happening. _Laravel equivalent: in Livewire you'd use `wire:loading`; in vanilla Laravel you'd need custom JS._
+
+**`FormData`** — A browser API that represents form data as key-value pairs. When you use `<form action={formAction}>`, the browser automatically collects all named inputs into a `FormData` object and passes it to the Server Action. `Object.fromEntries(formData)` converts it to a plain `{ key: value }` object. _Laravel equivalent: `$request->all()` — the framework gives you the submitted data as an associative array._
+
+**`redirect()` in Server Actions** — Next.js's `redirect()` (from `next/navigation`) works inside Server Actions to navigate after a mutation. It throws internally (a Next.js convention) to interrupt execution, so it must be called OUTSIDE any try/catch. _Laravel equivalent: `return redirect('/board')` in a controller method._
+
+**Progressive enhancement** — When you use `<form action={formAction}>` instead of `onSubmit`, the form works even if JavaScript fails to load. The browser submits the form as a regular POST request, and the Server Action still runs. This is a web platform feature that Next.js preserves. _Laravel equivalent: standard `<form method="POST">` — it always works without JS. This is the same idea._
