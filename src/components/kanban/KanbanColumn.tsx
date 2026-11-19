@@ -45,9 +45,10 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
 interface KanbanColumnProps {
   status: ApplicationStatus;
   applications: Application[];
+  demoMode?: boolean;
 }
 
-export function KanbanColumn({ status, applications }: KanbanColumnProps) {
+export function KanbanColumn({ status, applications, demoMode = false }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     // The column ID matches the status name so we can read it in onDragEnd.
     id: status,
@@ -72,7 +73,7 @@ export function KanbanColumn({ status, applications }: KanbanColumnProps) {
       {/* Cards */}
       <div className="flex flex-col gap-2">
         {applications.map((app) => (
-          <KanbanCard key={app.id} application={app} />
+          <KanbanCard key={app.id} application={app} demoMode={demoMode} />
         ))}
       </div>
 

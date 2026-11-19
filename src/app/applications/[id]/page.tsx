@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, statusHistory } from "@/db/schema";
+import { isDemoMode } from "@/lib/config";
 import { ApplicationForm } from "@/components/forms/ApplicationForm";
 import { StatusTimeline } from "@/components/ui/StatusTimeline";
 
@@ -94,11 +95,69 @@ async function ApplicationDetail({
     .where(eq(statusHistory.applicationId, numericId))
     .orderBy(desc(statusHistory.changedAt));
 
+  const demoMode = isDemoMode();
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-      {/* Left column: edit form */}
+      {/* Left column: edit form (or read-only details in demo mode) */}
       <div>
-        <ApplicationForm application={application} />
+        {demoMode ? (
+          <div className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+            <div>
+              <span className="text-sm text-gray-500">Company</span>
+              <p className="text-lg font-medium">{application.company}</p>
+            </div>
+            <div>
+              <span className="text-sm text-gray-500">Role</span>
+              <p className="text-lg font-medium">{application.role}</p>
+            </div>
+            <div>
+              <span className="text-sm text-gray-500">Status</span>
+              <p className="capitalize">{application.status.replace("_", " ")}</p>
+            </div>
+            {application.jobUrl && (
+              <div>
+                <span className="text-sm text-gray-500">URL</span>
+                <p>
+                  <a
+                    href={application.jobUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {application.jobUrl}
+                  </a>
+                </p>
+              </div>
+            )}
+            {application.city && (
+              <div>
+                <span className="text-sm text-gray-500">City</span>
+                <p>{application.city}</p>
+              </div>
+            )}
+            {application.workMode && (
+              <div>
+                <span className="text-sm text-gray-500">Work Mode</span>
+                <p className="capitalize">{application.workMode}</p>
+              </div>
+            )}
+            {application.salary && (
+              <div>
+                <span className="text-sm text-gray-500">Salary Range</span>
+                <p>{application.salary}</p>
+              </div>
+            )}
+            {application.notes && (
+              <div>
+                <span className="text-sm text-gray-500">Notes</span>
+                <p className="whitespace-pre-wrap">{application.notes}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <ApplicationForm application={application} />
+        )}
       </div>
 
       {/* Right column: status history timeline */}

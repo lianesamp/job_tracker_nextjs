@@ -32,7 +32,16 @@ import {
   updateApplicationSchema,
   updateStatusSchema,
 } from "@/lib/validators";
+import { isDemoMode } from "@/lib/config";
 import type { Application } from "@/types";
+
+// ─── Demo mode guard ─────────────────────────────────────
+// Reusable check for all mutation actions. Returns an error result
+// if DEMO_MODE is enabled, preventing any writes to the database.
+const DEMO_ERROR: ActionResult<Application> = {
+  success: false,
+  formError: "This is a demo. Modifications are disabled.",
+};
 
 // ─── Shared result type ─────────────────────────────────
 // Every action returns this shape so the UI can handle success/failure uniformly.
@@ -52,6 +61,8 @@ export type FormState = ActionResult<Application> | null;
 export async function createApplication(
   input: unknown
 ): Promise<ActionResult<Application>> {
+  if (isDemoMode()) return DEMO_ERROR;
+
   // 1. Validate input with Zod (.safeParse doesn't throw — it returns a result)
   const parsed = createApplicationSchema.safeParse(input);
 
@@ -135,6 +146,8 @@ export async function updateApplication(
   id: number,
   input: unknown
 ): Promise<ActionResult<Application>> {
+  if (isDemoMode()) return DEMO_ERROR;
+
   // 1. Validate the partial input
   const parsed = updateApplicationSchema.safeParse(input);
 
@@ -229,6 +242,8 @@ export async function updateApplicationAction(
 export async function updateApplicationStatus(
   input: unknown
 ): Promise<ActionResult<Application>> {
+  if (isDemoMode()) return DEMO_ERROR;
+
   // 1. Validate with the small status-only schema
   const parsed = updateStatusSchema.safeParse(input);
 

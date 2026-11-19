@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/db";
 import { applications } from "@/db/schema";
+import { isDemoMode } from "@/lib/config";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 
 /**
@@ -33,9 +34,16 @@ export const metadata: Metadata = {
 async function BoardContent() {
   await connection();
   const allApplications = await db.select().from(applications);
+  const demoMode = isDemoMode();
 
   return (
     <>
+      {demoMode && (
+        <div className="mb-4 rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200">
+          This is a read-only demo. Create, edit, and drag-and-drop are disabled.
+        </div>
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Kanban Board</h1>
@@ -43,14 +51,16 @@ async function BoardContent() {
             {allApplications.length} application{allApplications.length !== 1 && "s"}
           </p>
         </div>
-        <Link
-          href="/applications/new"
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-        >
-          + Add Application
-        </Link>
+        {!demoMode && (
+          <Link
+            href="/applications/new"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+          >
+            + Add Application
+          </Link>
+        )}
       </div>
-      <KanbanBoard initialApplications={allApplications} />
+      <KanbanBoard initialApplications={allApplications} demoMode={demoMode} />
     </>
   );
 }

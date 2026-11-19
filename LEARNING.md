@@ -193,3 +193,15 @@ Glossary of new concepts learned while building this project.
 **Metadata inheritance** — In Next.js, child pages inherit metadata from parent layouts. The root layout sets default OpenGraph tags (site name, type, description), and child pages only need to override what's different (title, description). The `title.template` applies to both regular titles and OpenGraph titles. _Laravel equivalent: setting default meta tags in the layout and overriding them with `@section` in child views._
 
 **Dynamic OpenGraph in `generateMetadata`** — When a page uses `generateMetadata` (the async function), you can build OpenGraph tags from the data. For the detail page, we set `og:title` to "Company — Role" and `og:description` to include the city. This means sharing a link to `/applications/5` on LinkedIn shows the actual company and role in the preview card.
+
+---
+
+## Demo Mode (Feature Flag)
+
+**Feature flag** — A technique to enable or disable features at runtime without changing code. We use the `DEMO_MODE` environment variable: set it to `"true"` on Vercel for the public deploy, leave it `"false"` locally. This lets the same codebase behave differently per environment. _Laravel equivalent: checking `config('app.demo')` or a custom `.env` variable like `DEMO_MODE=true`._
+
+**Defense in depth** — Protecting at multiple layers, not just the UI. We guard at both: (1) **Server Actions** — reject mutations early with a friendly error message, so even if someone crafts a manual request, the DB stays safe; (2) **UI** — hide buttons, disable drag-and-drop, and show read-only views, so the user experience is clean. _Laravel equivalent: checking permissions in both the controller (policy/gate) and the Blade template (`@can`)._
+
+**Conditional sensors (`@dnd-kit`)** — Passing `sensors={undefined}` to `<DndContext>` effectively disables all drag-and-drop interaction. This is simpler than adding `disabled` props to every draggable item — one check at the top disables the entire board.
+
+**Read-only detail view** — In demo mode, the `/applications/[id]` page renders application fields as plain text instead of an editable form. The status timeline still shows (it's read-only by nature). This ensures visitors can browse the data but can't modify anything.

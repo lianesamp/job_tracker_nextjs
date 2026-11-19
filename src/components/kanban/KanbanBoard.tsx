@@ -49,9 +49,10 @@ import { KanbanCard } from "./KanbanCard";
 
 interface KanbanBoardProps {
   initialApplications: Application[];
+  demoMode?: boolean;
 }
 
-export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
+export function KanbanBoard({ initialApplications, demoMode = false }: KanbanBoardProps) {
   // Local state — we update this optimistically on drag, then sync with the server.
   const [apps, setApps] = useState(initialApplications);
 
@@ -133,9 +134,12 @@ export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
     });
   }
 
+  // In demo mode, pass no sensors so drag never activates.
+  const activeSensors = demoMode ? undefined : sensors;
+
   return (
     <DndContext
-      sensors={sensors}
+      sensors={activeSensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -145,6 +149,7 @@ export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
             key={status}
             status={status}
             applications={applications}
+            demoMode={demoMode}
           />
         ))}
       </div>

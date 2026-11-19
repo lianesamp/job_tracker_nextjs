@@ -33,9 +33,10 @@ const WORK_MODE_LABELS: Record<string, string> = {
 
 interface KanbanCardProps {
   application: Application;
+  demoMode?: boolean;
 }
 
-export function KanbanCard({ application }: KanbanCardProps) {
+export function KanbanCard({ application, demoMode = false }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       // The id must be unique across all draggables in the DndContext.
@@ -79,15 +80,16 @@ export function KanbanCard({ application }: KanbanCardProps) {
         )}
       </div>
 
-      {/* Link to detail page. Works because PointerSensor needs 5px of
-          movement before starting a drag — a simple click navigates normally. */}
-      <Link
-        href={`/applications/${application.id}`}
-        className="mt-2 inline-block text-xs text-blue-600 hover:underline dark:text-blue-400"
-        onClick={(e) => e.stopPropagation()}
-      >
-        View details →
-      </Link>
+      {/* Link to detail page. Hidden in demo mode since the edit form is not available. */}
+      {!demoMode && (
+        <Link
+          href={`/applications/${application.id}`}
+          className="mt-2 inline-block text-xs text-blue-600 hover:underline dark:text-blue-400"
+          onClick={(e) => e.stopPropagation()}
+        >
+          View details →
+        </Link>
+      )}
     </div>
   );
 }
