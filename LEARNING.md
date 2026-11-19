@@ -123,3 +123,19 @@ Glossary of new concepts learned while building this project.
 **`<Link>` (from `next/link`)** — Next.js's replacement for `<a>` tags. It does client-side navigation (SPA-style) without a full page reload and prefetches the linked page when it appears in the viewport. _Vue equivalent: `<router-link>` from Vue Router. Laravel equivalent: regular `<a>` tags (Laravel doesn't do client-side navigation unless you add Inertia/Livewire)._
 
 **Server/Client Component split pattern** — The page (Server Component) fetches data from the DB and passes it as props to the interactive board (Client Component). This keeps the data-fetching on the server (no API endpoint needed, no loading spinner for initial data) while keeping interactivity on the client. _Laravel equivalent: a controller fetches data and passes it to an Inertia/Vue component via props._
+
+---
+
+## Step 7: Detail Page + Status History
+
+**Dynamic routes (`[id]`)** — A folder named `[id]` in the app directory matches any URL segment. `/applications/[id]/page.tsx` handles `/applications/1`, `/applications/42`, etc. Next.js passes the matched value via the `params` prop. In Next.js 16, `params` is a Promise that must be awaited. _Laravel equivalent: `Route::get('/applications/{id}', ...)` — same concept, but in Next.js the folder name IS the route definition._
+
+**`generateMetadata`** — An async function exported from a page that runs on the server to produce dynamic `<title>`, `<meta>` tags based on the data. For the detail page we set the title to "Company — Role | Job Tracker". Only Server Components can export it (Client Components can't). _Laravel equivalent: setting `<title>` dynamically in a Blade layout using `@section('title', $application->company)`._
+
+**`notFound()`** — A Next.js function (from `next/navigation`) that renders the nearest `not-found.tsx` page and returns a 404 status. We call it when the application ID doesn't exist in the database. _Laravel equivalent: `abort(404)` or `throw new ModelNotFoundException`._
+
+**Reusable form pattern (create/edit)** — One component that handles both creating and editing by accepting an optional `application` prop. When provided, the form pre-fills with existing data, uses `updateApplicationAction`, and shows a Status field. When absent, it uses `createApplicationAction`. _Laravel equivalent: a Blade partial `_form.blade.php` that checks `isset($application)` to decide create vs edit mode._
+
+**Uncontrolled inputs (`defaultValue`)** — React inputs can be "controlled" (value + onChange, React tracks state) or "uncontrolled" (defaultValue, the DOM tracks state). We use `defaultValue` because Server Actions read from `FormData` (the DOM), so there's no need for React to track every keystroke. _Vue equivalent: `v-model` is always "controlled." In React, uncontrolled is simpler when you only need the final value on submit._
+
+**`desc()` (Drizzle)** — An ORDER BY helper from `drizzle-orm`. `desc(statusHistory.changedAt)` generates `ORDER BY changed_at DESC` so the most recent status change appears first. _Laravel equivalent: `->orderByDesc('changed_at')` in Eloquent._

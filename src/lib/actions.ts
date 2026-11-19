@@ -195,6 +195,32 @@ export async function updateApplication(
   }
 }
 
+// ─── updateApplicationAction (for useActionState) ───────
+// Same pattern as createApplicationAction, but for editing.
+// The application ID is passed as a hidden form field.
+
+export async function updateApplicationAction(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const id = Number(formData.get("id"));
+  if (!id || isNaN(id)) {
+    return { success: false, formError: "Invalid application ID." };
+  }
+
+  // Remove the id field — updateApplication doesn't expect it in the data
+  const raw = Object.fromEntries(formData);
+  delete raw.id;
+
+  const result = await updateApplication(id, raw);
+
+  if (result.success) {
+    redirect(`/applications/${id}`);
+  }
+
+  return result;
+}
+
 // ─── updateApplicationStatus ────────────────────────────
 // A lightweight action for Kanban drag-and-drop.
 // Separate from updateApplication because it only changes the status column

@@ -96,7 +96,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 7: Detail Page + Status History
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Build `/applications/[id]` dynamic route
 - Show application details with an edit form

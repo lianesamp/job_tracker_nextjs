@@ -20,6 +20,7 @@
  * like vuedraggable. The concept is the same — attach drag behavior to an element.
  */
 
+import Link from "next/link";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { Application } from "@/types";
@@ -77,6 +78,16 @@ export function KanbanCard({ application }: KanbanCardProps) {
           </span>
         )}
       </div>
+
+      {/* Link to detail page. Works because PointerSensor needs 5px of
+          movement before starting a drag — a simple click navigates normally. */}
+      <Link
+        href={`/applications/${application.id}`}
+        className="mt-2 inline-block text-xs text-blue-600 hover:underline dark:text-blue-400"
+        onClick={(e) => e.stopPropagation()}
+      >
+        View details →
+      </Link>
     </div>
   );
 }
