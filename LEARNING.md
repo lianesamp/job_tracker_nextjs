@@ -61,3 +61,23 @@ Glossary of new concepts learned while building this project.
 **`.partial()`** — Zod method that makes all fields optional (like TypeScript's `Partial<T>`). We use it to create the update schema from the create schema: `updateApplicationSchema = createApplicationSchema.partial()`. _Laravel equivalent: using `'sometimes'` on all rules in an update request._
 
 **`z.coerce.number()`** — Zod 4 coercion: automatically converts string input to a number before validating. Useful for form data where everything arrives as a string. _Laravel equivalent: automatic type casting in Laravel's validation._
+
+---
+
+## Step 4: Server Actions
+
+**Server Actions** — Async functions marked with `"use server"` that run on the server but can be called directly from Client Components (forms, buttons). Next.js generates an HTTP endpoint behind the scenes — you never write `fetch()` or define an API route. _Laravel equivalent: controller methods like `ApplicationController@store`, but without defining routes or writing Axios/fetch calls._
+
+**`"use server"` directive** — Placed at the top of a file to tell the Next.js compiler that every exported function runs ONLY on the server. The client receives a reference (like a URL) to call the function, but never sees its code. This makes it safe to use DB queries, secrets, etc. _Laravel equivalent: there's no equivalent because Laravel controllers are always server-side by design._
+
+**Server Actions vs API Routes** — Next.js still supports API Routes (`app/api/*/route.ts`), but Server Actions are simpler for mutations: no manual fetch, no serialization, automatic form integration, and they work with progressive enhancement (forms submit even without JS). Use API Routes when you need a public API for external consumers. _Laravel equivalent: API Routes ≈ `routes/api.php`, Server Actions ≈ `routes/web.php` with form submissions._
+
+**`revalidatePath()`** — A Next.js function that tells the cache: "the data for this route is stale, re-fetch it on the next request." Call it after a mutation so the UI reflects the change. _Laravel equivalent: `Cache::forget('board-data')` or cache tags — but Next.js handles it at the route level automatically._
+
+**`eq()` (Drizzle)** — A WHERE clause helper from `drizzle-orm`. `eq(applications.id, 5)` generates `WHERE id = 5`. Drizzle uses functions instead of method chaining for conditions. _Laravel equivalent: `->where('id', 5)` in Eloquent._
+
+**`.returning()` (Drizzle)** — Added to INSERT/UPDATE queries to get back the affected rows (like PostgreSQL's `RETURNING *`). Without it, you'd need a separate SELECT after the mutation. _Laravel equivalent: `Model::create()` returns the model automatically — Drizzle needs `.returning()` to do the same._
+
+**`.safeParse()` vs `.parse()` (Zod)** — `.parse()` throws a `ZodError` on invalid input. `.safeParse()` returns `{ success: true, data }` or `{ success: false, error }` — no try/catch needed. We use `.safeParse()` in Server Actions so we can return structured errors to the form. _Laravel equivalent: using `Validator::make()` with `->fails()` instead of relying on automatic exception throwing._
+
+**`ActionResult<T>` pattern** — A discriminated union type: `{ success: true, data: T } | { success: false, fieldErrors?, formError? }`. Every Server Action returns this shape so the UI can handle success/failure uniformly. `fieldErrors` maps field names to error messages (for per-field form validation), while `formError` is a single top-level error. _No direct Laravel equivalent — in Laravel, validation errors are flashed to the session automatically._

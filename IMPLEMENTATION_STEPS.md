@@ -51,7 +51,7 @@ Each step includes what we'll do, what we'll learn, and its current status.
 ---
 
 ## Step 4: Server Actions (Create & Update)
-**Status:** Pending
+**Status:** Done
 **What we'll do:**
 - Create `actions.ts` with `"use server"` directive
 - Implement `createApplication` and `updateApplication` actions
